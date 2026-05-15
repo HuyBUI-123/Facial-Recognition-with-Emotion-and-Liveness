@@ -1,6 +1,6 @@
 from fastapi import APIRouter, File, HTTPException, UploadFile
 
-from app.schemas.frame_schema import AntiSpoofingResponse, AntiSpoofingResult
+from app.schemas.anti_spoofing_schema import AntiSpoofingResponse, AntiSpoofingResult
 from app.services.anti_spoofing_service import AntiSpoofingService
 from app.utils.preprocess import load_image_from_bytes
 

@@ -1,6 +1,6 @@
 from fastapi import APIRouter, File, HTTPException, UploadFile
 
-from app.schemas.frame_schema import EmotionResponse, EmotionResult
+from app.schemas.emotion_schema import EmotionResponse, EmotionResult
 from app.services.emotion_service import EmotionService
 from app.utils.preprocess import load_image_from_bytes
 

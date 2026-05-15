@@ -1,6 +1,6 @@
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 
-from app.schemas.frame_schema import RecognitionResponse, RecognitionResult, RegisterResponse
+from app.schemas.verification_schema import RecognitionResponse, RecognitionResult, RegisterResponse
 from app.services.verification_service import VerificationService
 from app.utils.preprocess import load_image_from_bytes
 

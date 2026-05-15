@@ -1,14 +1,10 @@
 from fastapi import APIRouter, File, HTTPException, UploadFile
 
-from app.schemas.frame_schema import (
-    AntiSpoofingResult,
-    DetectedFace,
-    EmotionResult,
-    FaceAnalysis,
-    FrameAnalysisResponse,
-    NormalizedBox,
-    RecognitionResult,
-)
+from app.schemas.anti_spoofing_schema import AntiSpoofingResult
+from app.schemas.common_schema import DetectedFace, NormalizedBox
+from app.schemas.emotion_schema import EmotionResult
+from app.schemas.pipeline_schema import FaceAnalysis, FrameAnalysisResponse
+from app.schemas.verification_schema import RecognitionResult
 from app.services.anti_spoofing_service import AntiSpoofingService
 from app.services.emotion_service import EmotionService
 from app.services.face_detection_service import FaceDetectionService
