@@ -58,7 +58,7 @@ try:
 except ImportError:
     # Standalone: add parent to path so the bare import works.
     sys.path.insert(0, str(Path(__file__).parent.parent))
-    from Face_detection_module.face_detection import (
+    from training_module.Face_detection_module.face_detection import (
         FaceDetector,
         DEFAULT_CONF_THRESHOLD,
         DEFAULT_NMS_THRESHOLD,

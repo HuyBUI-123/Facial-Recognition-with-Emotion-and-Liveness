@@ -4,7 +4,7 @@ from torchvision import datasets, transforms
 from PIL import Image
 import sys
 
-from model import build_model, get_mobilenet_norm_stats
+from training_module.emotion_module.affectnet.model import build_model, get_mobilenet_norm_stats
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 MODEL_PATH = "best_model.pth"

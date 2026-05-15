@@ -4,7 +4,7 @@ import onnxruntime as ort
 from torchvision import datasets, transforms
 from PIL import Image
 
-from model import get_mobilenet_norm_stats
+from training_module.emotion_module.affectnet.model import get_mobilenet_norm_stats
 
 ONNX_PATH = "best_model.onnx"
 TRAIN_DIR = "AffectNet/Train"

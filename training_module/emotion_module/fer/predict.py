@@ -4,7 +4,7 @@ from torchvision import transforms
 from PIL import Image
 import sys
 
-from model import build_model, get_mobilenet_norm_stats
+from training_module.emotion_module.fer.model import build_model, get_mobilenet_norm_stats
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 EMOTIONS = ['angry', 'disgust', 'fear', 'happy', 'neutral', 'sad', 'surprise']

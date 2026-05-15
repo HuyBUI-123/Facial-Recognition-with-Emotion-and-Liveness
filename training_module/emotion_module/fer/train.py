@@ -5,10 +5,10 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import seaborn as sns
-from torch.optim import Adam, AdamW
+from torch.optim import Adam
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torchvision import datasets, transforms
-from torch.utils.data import DataLoader, Subset, random_split
+from torch.utils.data import DataLoader, random_split
 from sklearn.metrics import (
     accuracy_score,
     classification_report,
@@ -16,21 +16,21 @@ from sklearn.metrics import (
     precision_recall_fscore_support,
 )
 
-from model import build_model, get_mobilenet_norm_stats, unfreeze_backbone
+from training_module.emotion_module.fer.model import build_model, get_mobilenet_norm_stats, unfreeze_backbone
 
 # Config
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-TRAIN_DIR = "AffectNet/Train"
-TEST_DIR = "AffectNet/Test"
-IMG_SIZE = 224
-BATCH_SIZE = 32
+TRAIN_DIR = "fer2013/train"
+TEST_DIR = "fer2013/test"
+IMG_SIZE = 96
+BATCH_SIZE = 128
 EPOCHS_FROZEN = 15
 EPOCHS_TUNED = 15
 LR_FROZEN = 1e-3
 LR_TUNED = 1e-4
 SAVE_PATH = "best_model.pth"
-METRICS_PATH = "metrics/test_metrics.txt"
-HISTORY_CSV_PATH = "metrics/training_history.csv"
+METRICS_PATH = "test_metrics.txt"
+HISTORY_CSV_PATH = "training_history.csv"
 
 print(f"Using device: {DEVICE}")
 
@@ -41,6 +41,7 @@ print(f"MobileNetV2 normalize std : {NORM_STD}")
 # Transforms
 train_transform = transforms.Compose([
     transforms.Resize((IMG_SIZE, IMG_SIZE)),
+    transforms.Grayscale(num_output_channels=3),
     transforms.RandomHorizontalFlip(),
     transforms.RandomRotation(15),
     transforms.ColorJitter(brightness=0.2, contrast=0.2),
@@ -50,28 +51,19 @@ train_transform = transforms.Compose([
 
 test_transform = transforms.Compose([
     transforms.Resize((IMG_SIZE, IMG_SIZE)),
+    transforms.Grayscale(num_output_channels=3),
     transforms.ToTensor(),
     transforms.Normalize(mean=NORM_MEAN, std=NORM_STD)
 ])
 
 # Data
-full_train_base = datasets.ImageFolder(TRAIN_DIR)
-full_train_aug = datasets.ImageFolder(TRAIN_DIR, transform=train_transform)
-full_train_eval = datasets.ImageFolder(TRAIN_DIR, transform=test_transform)
+full_train = datasets.ImageFolder(TRAIN_DIR, transform=train_transform)
 test_dataset = datasets.ImageFolder(TEST_DIR,  transform=test_transform)
-EMOTIONS = full_train_base.classes
+EMOTIONS = full_train.classes
 
-num_samples = len(full_train_base)
-train_size = int(0.8 * num_samples)
-val_size = num_samples - train_size
-train_idx_subset, val_idx_subset = random_split(
-    range(num_samples), [train_size, val_size], generator=torch.Generator().manual_seed(42)
+train_dataset, val_dataset = random_split(
+    full_train, [0.8, 0.2], generator=torch.Generator().manual_seed(42)
 )
-train_indices = list(train_idx_subset.indices)
-val_indices = list(val_idx_subset.indices)
-
-train_dataset = Subset(full_train_aug, train_indices)
-val_dataset = Subset(full_train_eval, val_indices)
 
 train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=0)
 val_loader = DataLoader(val_dataset, batch_size=BATCH_SIZE, shuffle=False, num_workers=0)
@@ -81,7 +73,7 @@ print(f"Train: {len(train_dataset)} | Val: {len(val_dataset)} | Test: {len(test_
 
 # Class weights / punish more on major classes
 counts = [0] * len(EMOTIONS)
-for _, label in full_train_base.samples:
+for _, label in full_train.samples:
     counts[label] += 1
 total = sum(counts)
 weights = torch.tensor(
@@ -177,8 +169,8 @@ def plot_history(h1, h2):
     axes[1].legend()
 
     plt.tight_layout()
-    plt.savefig("metrics/training_curves.png")
-    print("Saved: metrics/training_curves.png")
+    plt.savefig("training_curves.png")
+    print("Saved: training_curves.png")
 
     with open(HISTORY_CSV_PATH, "w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
@@ -249,8 +241,8 @@ def evaluate_test(model):
     plt.ylabel("True Label")
     plt.xlabel("Predicted Label")
     plt.tight_layout()
-    plt.savefig("metrics/confusion_matrix.png")
-    print("Saved: metrics/confusion_matrix.png")
+    plt.savefig("confusion_matrix.png")
+    print("Saved: confusion_matrix.png")
 
 
 # Main
@@ -258,15 +250,13 @@ if __name__ == "__main__":
 
     # Phase 1 — frozen backbone
     model = build_model(num_classes=len(EMOTIONS), freeze_backbone=True).to(DEVICE)
-    # optimizer = Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=LR_TUNED)
-    optimizer = AdamW(filter(lambda p: p.requires_grad, model.parameters()), lr=LR_FROZEN, weight_decay=1e-4)
+    optimizer = Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=LR_FROZEN)
     scheduler = ReduceLROnPlateau(optimizer, mode='min', patience=3, factor=0.5)
     h1 = run_training(model, optimizer, scheduler, EPOCHS_FROZEN, "Phase 1 — Frozen Backbone")
 
     # Phase 2 — fine-tune
-    model = unfreeze_backbone(model, unfreeze_from_layer=10)
-    # optimizer = Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=LR_TUNED)
-    optimizer = AdamW(filter(lambda p: p.requires_grad, model.parameters()), lr=LR_TUNED, weight_decay=1e-4)
+    model = unfreeze_backbone(model, unfreeze_from_layer=14)
+    optimizer = Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=LR_TUNED)
     scheduler = ReduceLROnPlateau(optimizer, mode='min', patience=3, factor=0.5)
     h2 = run_training(model, optimizer, scheduler, EPOCHS_TUNED, "Phase 2 — Fine-tuning")
 
