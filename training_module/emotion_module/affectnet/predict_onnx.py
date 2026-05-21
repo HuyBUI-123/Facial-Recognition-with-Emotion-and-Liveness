@@ -4,12 +4,12 @@ import onnxruntime as ort
 from torchvision import datasets, transforms
 from PIL import Image
 
-from training_module.emotion_module.affectnet.model import get_mobilenet_norm_stats
+from model import get_convnext_tiny_norm_stats
 
-ONNX_PATH = "best_model.onnx"
+ONNX_PATH = "emotion.onnx"
 TRAIN_DIR = "AffectNet/Train"
 IMG_SIZE = 224
-NORM_MEAN, NORM_STD = get_mobilenet_norm_stats()
+NORM_MEAN, NORM_STD = get_convnext_tiny_norm_stats()
 EMOTIONS = datasets.ImageFolder(TRAIN_DIR).classes
 
 transform = transforms.Compose([

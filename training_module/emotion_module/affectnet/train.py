@@ -16,7 +16,7 @@ from sklearn.metrics import (
     precision_recall_fscore_support,
 )
 
-from model import build_model, get_efficientnetv2s_norm_stats, unfreeze_backbone
+from model import build_model, get_convnext_tiny_norm_stats, unfreeze_backbone
 
 # Config
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -34,9 +34,9 @@ HISTORY_CSV_PATH = "metrics/training_history.csv"
 
 print(f"Using device: {DEVICE}")
 
-NORM_MEAN, NORM_STD = get_efficientnetv2s_norm_stats()
-print(f"EfficientNetV2-S normalize mean: {NORM_MEAN}")
-print(f"EfficientNetV2-S normalize std : {NORM_STD}")
+NORM_MEAN, NORM_STD = get_convnext_tiny_norm_stats()
+print(f"ConvNeXt-Tiny normalize mean: {NORM_MEAN}")
+print(f"ConvNeXt-Tiny normalize std : {NORM_STD}")
 
 # Transforms
 train_transform = transforms.Compose([

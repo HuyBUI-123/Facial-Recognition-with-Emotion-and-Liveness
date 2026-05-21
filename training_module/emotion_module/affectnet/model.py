@@ -2,17 +2,17 @@ import torch.nn as nn
 from torchvision import models
 
 
-def get_efficientnetv2s_norm_stats():
-    weights_preset = models.EfficientNet_V2_S_Weights.DEFAULT.transforms()
+def get_convnext_tiny_norm_stats():
+    weights_preset = models.ConvNeXt_Tiny_Weights.DEFAULT.transforms()
     return list(weights_preset.mean), list(weights_preset.std)
 
 
 def get_mobilenet_norm_stats():
     # Backward-compatible alias for older scripts.
-    return get_efficientnetv2s_norm_stats()
+    return get_convnext_tiny_norm_stats()
 
 def build_model(num_classes=7, freeze_backbone=True):
-    model = models.efficientnet_v2_s(weights=models.EfficientNet_V2_S_Weights.DEFAULT)
+    model = models.convnext_tiny(weights=models.ConvNeXt_Tiny_Weights.DEFAULT)
 
     if freeze_backbone:
         for param in model.features.parameters():
@@ -20,9 +20,10 @@ def build_model(num_classes=7, freeze_backbone=True):
 
     in_features = model.classifier[1].in_features
     model.classifier = nn.Sequential(
+        nn.LayerNorm(in_features),
         nn.Dropout(p=0.5),
         nn.Linear(in_features, 512),
-        nn.SiLU(),
+        nn.GELU(),
         nn.Dropout(p=0.3),
         nn.Linear(512, num_classes)
     )
