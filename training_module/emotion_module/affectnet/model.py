@@ -18,8 +18,16 @@ def build_model(num_classes=7, freeze_backbone=True):
         for param in model.features.parameters():
             param.requires_grad = False
 
-    in_features = model.classifier[1].in_features
+    in_features = None
+    for layer in reversed(model.classifier):
+        if isinstance(layer, nn.Linear):
+            in_features = layer.in_features
+            break
+    if in_features is None:
+        raise ValueError("Unable to infer ConvNeXt classifier input features.")
+
     model.classifier = nn.Sequential(
+        nn.Flatten(1),
         nn.LayerNorm(in_features),
         nn.Dropout(p=0.5),
         nn.Linear(in_features, 512),
