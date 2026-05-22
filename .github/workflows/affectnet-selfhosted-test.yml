@@ -1,0 +1,38 @@
+name: AffectNet Self-Hosted Test
+
+on:
+  workflow_dispatch:
+
+jobs:
+  affectnet-train:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Copy AffectNet dataset into workspace
+        shell: bash
+        run: |
+          echo "Workspace:"
+          pwd
+
+          echo "Copying AffectNet dataset..."
+          cp -a "$HOME/Desktop/Datasets/emotion/AffectNet" "./training_module/emotion_module/affectnet/"
+
+          echo "Dataset folder contents:"
+          ls -la "./training_module/emotion_module/affectnet"
+
+      - name: Train AffectNet model (PyTorch)
+        shell: bash
+        run: |
+          conda activate mlops
+          python train.py
+        working-directory: training_module/emotion_module/affectnet
+
+      - name: Verify outputs
+        shell: bash
+        run: |
+          echo "Training output directory listing:"
+          ls -la
+        working-directory: training_module/emotion_module/affectnet
