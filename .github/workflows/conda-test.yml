@@ -15,7 +15,7 @@ jobs:
           echo "=== Current Directory ==="
           pwd
           echo "=== List Current Directory ==="
-          ls -la
+          ls
           echo "=== PATH ==="
           echo $PATH
 
