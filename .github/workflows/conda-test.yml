@@ -12,7 +12,8 @@ jobs:
         run: |
           echo "=== WHO AM I ==="
           whoami
-
+          echo "=== Current Directory ==="
+          pwd
           echo "=== PATH ==="
           echo $PATH
 
