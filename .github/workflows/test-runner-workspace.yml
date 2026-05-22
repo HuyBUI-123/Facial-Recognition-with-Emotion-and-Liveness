@@ -1,0 +1,20 @@
+name: Test Runner Workspace
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Verify files exist
+        run: |
+          echo "Current directory:"
+          pwd
+
+          echo "Listing repo contents:"
+          ls -la
