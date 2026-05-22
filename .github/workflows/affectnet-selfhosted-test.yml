@@ -26,6 +26,7 @@ jobs:
       - name: Train AffectNet model (PyTorch)
         shell: bash
         run: |
+          source "$(conda info --base)/etc/profile.d/conda.sh"
           conda activate mlops
           python train.py
         working-directory: training_module/emotion_module/affectnet
