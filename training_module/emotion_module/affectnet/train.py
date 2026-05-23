@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import csv
+from pathlib import Path
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -24,8 +25,8 @@ TRAIN_DIR = "AffectNet/Train"
 TEST_DIR = "AffectNet/Test"
 IMG_SIZE = 224
 BATCH_SIZE = 32
-EPOCHS_FROZEN = 40
-EPOCHS_TUNED = 40
+EPOCHS_FROZEN = 10
+EPOCHS_TUNED = 10
 LR_FROZEN = 1e-3
 LR_TUNED = 5e-5
 SAVE_PATH = "emotion.pth"
@@ -37,6 +38,20 @@ print(f"Using device: {DEVICE}")
 NORM_MEAN, NORM_STD = get_convnext_tiny_norm_stats()
 print(f"ConvNeXt-Tiny normalize mean: {NORM_MEAN}")
 print(f"ConvNeXt-Tiny normalize std : {NORM_STD}")
+
+
+def ensure_parent_dir(path: str) -> None:
+    Path(path).expanduser().resolve().parent.mkdir(parents=True, exist_ok=True)
+
+
+def ensure_dir(path: str) -> None:
+    Path(path).expanduser().resolve().mkdir(parents=True, exist_ok=True)
+
+
+ensure_parent_dir(SAVE_PATH)
+ensure_parent_dir(METRICS_PATH)
+ensure_parent_dir(HISTORY_CSV_PATH)
+ensure_dir("metrics")
 
 # Transforms
 train_transform = transforms.Compose([
@@ -177,9 +192,11 @@ def plot_history(h1, h2):
     axes[1].legend()
 
     plt.tight_layout()
+    ensure_parent_dir("metrics/training_curves.png")
     plt.savefig("metrics/training_curves.png")
     print("Saved: metrics/training_curves.png")
 
+    ensure_parent_dir(HISTORY_CSV_PATH)
     with open(HISTORY_CSV_PATH, "w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
         writer.writerow(["epoch", "phase", "train_loss", "val_loss", "train_acc", "val_acc"])
@@ -228,6 +245,7 @@ def evaluate_test(model):
     print("\n=== Classification Report ===")
     print(report_text)
 
+    ensure_parent_dir(METRICS_PATH)
     with open(METRICS_PATH, "w", encoding="utf-8") as f:
         f.write("=== Test Metrics Summary ===\n")
         f.write(f"Accuracy           : {accuracy:.4f}\n")
@@ -249,6 +267,7 @@ def evaluate_test(model):
     plt.ylabel("True Label")
     plt.xlabel("Predicted Label")
     plt.tight_layout()
+    ensure_parent_dir("metrics/confusion_matrix.png")
     plt.savefig("metrics/confusion_matrix.png")
     print("Saved: metrics/confusion_matrix.png")
 
