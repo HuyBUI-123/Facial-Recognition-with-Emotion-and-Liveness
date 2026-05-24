@@ -8,6 +8,7 @@ npm run dev
 
 # 3. In another terminal, start the backend
 cd backend
+uvicorn app.main:app --reload
 python -m app.main
 
 # 4. Open the URL Vite prints (http://localhost:5173)
