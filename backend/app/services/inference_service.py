@@ -76,10 +76,12 @@ class InferenceService:
                 )
             )
 
+        # Batch emotion on all faces (for testing)
+        face_results = self.run_emotion_batch(face_crops, face_results)
+
         # Batch anti-spoofing → filter live faces
         face_results = self.run_anti_spoofing_batch(face_crops, face_results)
         live_idx = [i for i, fr in enumerate(face_results) if fr.is_live]
-
 
         if not live_idx:
             result.faces = face_results
@@ -87,11 +89,8 @@ class InferenceService:
 
         live_crops = [face_crops[i] for i in live_idx]
 
-        # Batch emotion on live faces only
-        live_results = [face_results[i] for i in live_idx]
-        live_results = self.run_emotion_batch(live_crops, live_results)
-
         # Batch verification on live faces only
+        live_results = [face_results[i] for i in live_idx]
         live_results = self.run_verification_batch(live_crops, live_results)
 
         # Merge back and collect attendance
