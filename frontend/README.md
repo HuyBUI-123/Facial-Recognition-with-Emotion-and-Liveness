@@ -1,4 +1,4 @@
-# FaceGuard Frontend
+# Face Recognition with Emotion and Liveness
 
 React + Vite frontend for the COS30082 facial recognition attendance system.
 
@@ -6,17 +6,17 @@ React + Vite frontend for the COS30082 facial recognition attendance system.
 
 The top bar lets you switch between:
 
-1. **§ 01 — The Station** — main attendance UI (camera + live detection + registry + log).
-2. **§ 02 — Diagnostics** — per-endpoint test page (run each API individually, see response, latency, status).
+1. **§ 01 — Main Page** — main attendance UI (camera + live detection + registry + log).
+2. **§ 02 — Dev Page** — per-endpoint test page (run each API individually, see response, latency, status).
 
-The diagnostics page is what you use right now while detection isn't finished — it draws a hardcoded crop box on the camera, takes the crop, and sends it to each endpoint with a "Run test" button.
+The dev page is what you use right now while detection isn't finished — it draws a hardcoded crop box on the camera, takes the crop, and sends it to each endpoint with a "Run test" button.
 
 ## Quick start
 
 ```bash
 cd frontend
-cp .env.example .env       # only first time
-npm install                 # only first time
+cp .env.example .env      
+npm install                 
 npm run dev
 ```
 
@@ -50,7 +50,6 @@ VITE_ENDPOINT_VERIFY=/api/verification/verify
 VITE_ENDPOINT_REGISTER=/api/verification/register
 
 VITE_FRAME_INTERVAL_MS=2000
-VITE_DEMO_PLACEHOLDERS=true
 ```
 
 The Vite dev server proxies all `/api/*` requests to `VITE_BACKEND_URL`, so the backend URL never appears in client code.
@@ -89,7 +88,6 @@ frontend/
     │   ├── RegisterModal.jsx
     │   ├── Toasts.jsx
     │   ├── Icons.jsx
-    │   ├── PlaceholderBadge.jsx
     │   ├── DiagnosticsView.jsx     ← test page
     │   └── EndpointCard.jsx        ← test card
     ├── hooks/
@@ -106,11 +104,3 @@ frontend/
         └── global.css
 ```
 
-## Common issues
-
-| Problem                    | Fix                                                    |
-|----------------------------|--------------------------------------------------------|
-| Camera access denied       | Allow webcam permission in the browser                 |
-| Backend unreachable        | Start backend; check `VITE_BACKEND_URL` in `.env`      |
-| White screen on `npm run dev` | Run `npm install` first; check console for errors   |
-| 404 on /api/...            | Backend isn't running or proxy target is wrong         |

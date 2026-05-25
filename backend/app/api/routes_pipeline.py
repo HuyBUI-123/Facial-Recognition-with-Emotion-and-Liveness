@@ -5,11 +5,13 @@ from app.schemas.common_schema import DetectedFace, NormalizedBox
 from app.schemas.emotion_schema import EmotionResult
 from app.schemas.pipeline_schema import FaceAnalysis, FrameAnalysisResponse
 from app.schemas.verification_schema import RecognitionResult
+from app.services.capture_service import CaptureService
 from app.services.inference_service import InferenceResult, InferenceService
 from app.utils.preprocess import load_image_from_bytes
 
 router = APIRouter()
 inference_service = InferenceService()
+capture_service = CaptureService()
 
 
 @router.post("/frame", response_model=FrameAnalysisResponse)
@@ -33,12 +35,12 @@ async def analyze_frame(file: UploadFile = File(...)) -> FrameAnalysisResponse:
             face=DetectedFace(
                 bbox=NormalizedBox(x=fr.bbox[0], y=fr.bbox[1], w=fr.bbox[2], h=fr.bbox[3]),
                 detection_confidence=fr.detection_score,
-                crop_width=0,
-                crop_height=0,
+                crop_width=fr.crop_width,
+                crop_height=fr.crop_height,
             ),
             emotion=EmotionResult(label=fr.emotion, confidence=fr.emotion_score),
             anti_spoofing=AntiSpoofingResult(
-                label="real" if fr.is_live else "fake",
+                label="real" if fr.is_live else "spoof",
                 confidence=fr.liveness_score,
             ),
             recognition=RecognitionResult(
@@ -50,5 +52,7 @@ async def analyze_frame(file: UploadFile = File(...)) -> FrameAnalysisResponse:
         for fr in result.faces
     ]
 
-    return FrameAnalysisResponse(image_width=width, image_height=height, faces=face_results)
+    response = FrameAnalysisResponse(image_width=width, image_height=height, faces=face_results)
+    capture_service.save(contents, response)
+    return response
 
